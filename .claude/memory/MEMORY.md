@@ -1,0 +1,3 @@
+- [Memory system rules](feedback_memory_system.md) — guidelines for storing and using memory across sessions
+- [Use Minitest for testing](feedback_testing_minitest.md) — testing framework preference for this project
+- [Model selection: Opus for planning, Sonnet for implementation](feedback_model_selection.md) — which Claude model for which phase

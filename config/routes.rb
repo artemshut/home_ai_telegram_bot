@@ -11,4 +11,8 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  namespace :telegram do
+    post "webhook", to: "webhooks#create"
+  end
 end

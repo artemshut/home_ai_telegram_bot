@@ -46,6 +46,9 @@ gem "telegram-bot-ruby"
 # Anthropic Claude API [https://github.com/anthropics/anthropic-sdk-ruby]
 gem "anthropic-rb"
 
+# JSON Schema validation for tool arguments
+gem "json-schema"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

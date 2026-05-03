@@ -11,8 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Telegram bot for household management with:
 
 **Initial scope:**
-- Weekly menu planning
-- Food preferences
+- Dish library (household-owned list of dishes)
+- Weekly menu planning (pick dishes for the week)
 - Shopping lists
 - Adding events to calendar
 
@@ -156,9 +156,9 @@ Expected core models (build these explicitly with database state, not hidden in 
 - **TelegramUser** — Links Telegram user ID to internal user record.
 - **Household** — A group of people sharing a space (family, roommates, etc.).
 - **HouseholdMembership** — Maps users to households.
-- **FoodPreference** — Dietary restrictions, allergies, likes/dislikes per user.
-- **WeeklyMenu** — A plan for meals over a week, owned by a household.
-- **Meal** — A single meal in a menu (breakfast, lunch, dinner) for a specific day.
+- **Dish** — A named dish in the household's dish library (reusable across menus).
+- **WeeklyMenu** — A plan for the week, owned by a household.
+- **Meal** — A single dish slot in a weekly menu (day + meal type, references a Dish).
 - **ShoppingList** — A list of items to buy, linked to a menu or household.
 - **ShoppingItem** — An individual item on a shopping list with quantity and category.
 - **AiRun** — Record of each Claude call (input, output, tokens, timestamp).
@@ -177,7 +177,9 @@ app/services/home_ai_telegram_bot/
     ai_router.rb              # Decodes Claude's tool calls, routes to tools
     tool_registry.rb          # Central registry of available tools
     tools/
-      generate_weekly_menu_tool.rb
+      add_dish_tool.rb
+      list_dishes_tool.rb
+      plan_weekly_menu_tool.rb
       create_shopping_list_tool.rb
       create_calendar_event_tool.rb
   telegram/
@@ -200,8 +202,10 @@ Claude should use **structured tool calls** where possible (not free-form text r
 
 ### Initial Tools
 
-- **generate_weekly_menu** — Create a week's meal plan based on preferences, household size, restrictions.
-- **create_shopping_list** — Generate a shopping list from a menu or user request.
+- **add_dish** — Add a named dish to the household's dish library.
+- **list_dishes** — Return the household's dish library.
+- **plan_weekly_menu** — Pick dishes for each slot of the week; creates `WeeklyMenu` + `Meal` records.
+- **create_shopping_list** — Generate a shopping list from the active menu or a freeform item list.
 - **create_calendar_event** — (Future) Add events to a household calendar.
 
 ### Tool Execution Contract
@@ -383,16 +387,16 @@ The Dockerfile uses a multi-stage build to minimize image size.
 
 ## First Milestone (Current Priority)
 
-Build the smallest useful product: **"User asks for a weekly menu → bot creates a structured menu → Rails saves it → Telegram shows it."**
+Build the smallest useful product: **"User picks dishes for the week → bot saves a `WeeklyMenu` → Telegram shows it."**
 
 Focus on this loop only:
 
 1. Receive Telegram message (webhook → job)
 2. Save or identify Telegram user
-3. Load household, members, and food preferences
+3. Load household and its dish library
 4. Send message + context to Claude
-5. Claude uses `generate_weekly_menu` tool
-6. Rails executes tool: create `WeeklyMenu` and `Meal` records
+5. Claude uses `add_dish` / `plan_weekly_menu` tools as needed
+6. Rails executes tool: create `Dish` / `WeeklyMenu` + `Meal` records
 7. Rails formats response
 8. Send formatted menu back to Telegram
 

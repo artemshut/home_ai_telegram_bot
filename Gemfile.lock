@@ -459,6 +459,7 @@ DEPENDENCIES
   debug
   image_processing (~> 1.2)
   importmap-rails
+  json-schema
   kamal
   pg (~> 1.1)
   propshaft
