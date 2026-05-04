@@ -18,13 +18,15 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
   test "calls AiRouter and sends reply via BotClient" do
     fake_router = Object.new
     fake_router.define_singleton_method(:call) { "Here is your menu." }
+    fake_router.define_singleton_method(:last_shopping_list) { nil }
+    fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
 
     fake_bot = Object.new
     message_sent = false
     fake_bot.define_singleton_method(:send_message) { |**_kwargs| message_sent = true }
 
-    HomeAiTelegramBot::Ai::AiRouter.stub(:new, fake_router) do
-      HomeAiTelegramBot::Telegram::BotClient.stub(:new, fake_bot) do
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
         ProcessTelegramUpdateJob.new.perform(@update.to_json)
         assert message_sent, "BotClient#send_message should have been called"
       end
@@ -36,12 +38,14 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
 
     fake_router = Object.new
     fake_router.define_singleton_method(:call) { "Menu reply" }
+    fake_router.define_singleton_method(:last_shopping_list) { nil }
+    fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
 
     fake_bot = Object.new
     fake_bot.define_singleton_method(:send_message) { |chat_id:, text:, **| sent_to = chat_id }
 
-    HomeAiTelegramBot::Ai::AiRouter.stub(:new, fake_router) do
-      HomeAiTelegramBot::Telegram::BotClient.stub(:new, fake_bot) do
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
         ProcessTelegramUpdateJob.new.perform(@update.to_json)
       end
     end
@@ -56,7 +60,7 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     fake_router = Object.new
     fake_router.define_singleton_method(:call) { called = true; "reply" }
 
-    HomeAiTelegramBot::Ai::AiRouter.stub(:new, fake_router) do
+    Ai::AiRouter.stub(:new, fake_router) do
       ProcessTelegramUpdateJob.new.perform(update)
     end
 
@@ -78,12 +82,14 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     called = false
     fake_router = Object.new
     fake_router.define_singleton_method(:call) { called = true; "ok" }
+    fake_router.define_singleton_method(:last_shopping_list) { nil }
+    fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
 
     fake_bot = Object.new
     fake_bot.define_singleton_method(:send_message) { |**_| nil }
 
-    HomeAiTelegramBot::Ai::AiRouter.stub(:new, fake_router) do
-      HomeAiTelegramBot::Telegram::BotClient.stub(:new, fake_bot) do
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
         ProcessTelegramUpdateJob.new.perform(update.to_json)
       end
     end
@@ -98,13 +104,15 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     fake_bot = Object.new
     fake_bot.define_singleton_method(:send_message) { |**_| nil }
 
-    HomeAiTelegramBot::Ai::AiRouter.stub(:new, ->(**kwargs) {
+    Ai::AiRouter.stub(:new, ->(**kwargs) {
       received_text = kwargs[:message_text]
       stub_router = Object.new
       stub_router.define_singleton_method(:call) { "ok" }
+      stub_router.define_singleton_method(:last_shopping_list) { nil }
+      stub_router.define_singleton_method(:last_pending_calendar_event) { nil }
       stub_router
     }) do
-      HomeAiTelegramBot::Telegram::BotClient.stub(:new, fake_bot) do
+      Telegram::BotClient.stub(:new, fake_bot) do
         ProcessTelegramUpdateJob.new.perform(update.to_json)
       end
     end

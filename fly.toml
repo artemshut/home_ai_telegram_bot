@@ -1,0 +1,39 @@
+app = "home-ai-telegram-bot"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "bin/rails db:prepare db:migrate:cache db:migrate:queue db:migrate:cable"
+
+[env]
+  APP_HOST = "home-ai-telegram-bot.fly.dev"
+  DB_POOL = "5"
+  PORT = "3000"
+  RAILS_ENV = "production"
+  RAILS_LOG_LEVEL = "info"
+  RAILS_MAX_THREADS = "2"
+  SOLID_QUEUE_THREADS = "1"
+  SOLID_QUEUE_IN_PUMA = "true"
+
+[processes]
+  app = "bin/rails server -b 0.0.0.0"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 30
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

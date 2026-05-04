@@ -18,10 +18,12 @@ class Object
 
     block.call(self)
   ensure
-    metaclass.send(:undef_method, method_name) rescue NameError
     if defined_on_singleton
       metaclass.send(:alias_method, method_name, aliased) rescue NameError
       metaclass.send(:undef_method, aliased) rescue NameError
+    else
+      # remove_method (not undef_method) so inherited methods remain accessible
+      metaclass.send(:remove_method, method_name) rescue NameError
     end
   end
 end

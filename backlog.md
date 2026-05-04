@@ -49,12 +49,13 @@ Goal: User adds dishes to a shared dish library, then picks which dishes to cook
 
 ### Epic: Menu Tool
 
-- [ ] Migrations + models: `Dish` (name, household), `WeeklyMenu`, `Meal` with unique `(household_id, week_start_date)`
-- [ ] `AddDishTool` — add a named dish to the household dish library
-- [ ] `ListDishesTool` — return the household's dish library
-- [ ] `PlanWeeklyMenuTool` — schema: `week_start_date`, `dish_ids` (or dish names); creates `WeeklyMenu` + `Meal`s in a transaction
-- [ ] `Telegram::MessageFormatter#format_weekly_menu` (day-grouped output)
-- [ ] `/menu` deterministic command (show active menu without calling Claude)
+- [x] Migrations + models: `Dish` (name, household), `WeeklyMenu`, `Meal` with unique `(household_id, week_start_date)`
+- [x] `AddDishTool` — add a named dish to the household dish library
+- [x] `ListDishesTool` — return the household's dish library
+- [x] `PlanWeeklyMenuTool` — schema: `week_start_date`, dish names; creates `WeeklyMenu` + `Meal`s
+- [x] Household seed / assignment — `seeds.rb` creates default "Home" household; `WebhookHandler` auto-assigns new users
+- [x] `Telegram::MessageFormatter#format_weekly_menu` (day-grouped output)
+- [x] `/menu` deterministic command (show active menu without calling Claude)
 
 ---
 
@@ -64,9 +65,9 @@ Goal: "build a shopping list from this week's menu" → `ShoppingList` + items; 
 
 ### Epic: Shopping List Tool
 
-- [ ] Migrations + models: `ShoppingList`, `ShoppingItem`
-- [ ] `CreateShoppingListTool` (from active menu or freeform item list) and `AddShoppingItemTool`
-- [ ] `KeyboardBuilder#shopping_item_toggle` + callback handler that flips `purchased`
+- [x] Migrations + models: `ShoppingList`, `ShoppingItem`
+- [x] `CreateShoppingListTool` (from active menu or freeform item list) and `AddShoppingItemTool`
+- [x] `KeyboardBuilder#shopping_item_toggle` + `CallbackRouter` that flips `purchased` and refreshes the list message
 
 ---
 
@@ -76,10 +77,10 @@ Goal: "I spent 12 eur on groceries" → `Expense` row; "expenses this month" →
 
 ### Epic: Expenses Tool
 
-- [ ] Migrations + models: `ExpenseCategory`, `Expense`; seed default categories
-- [ ] `LogExpenseTool` with `Expenses::Categorizer` (heuristics + Claude-assisted fallback)
-- [ ] `SummarizeExpensesTool` (week / month / category) and `ListExpenseCategoriesTool`
-- [ ] `MessageFormatter#format_expense_summary`
+- [x] Migrations + models: `ExpenseCategory`, `Expense`; seed default categories
+- [x] `LogExpenseTool` with `Expenses::Categorizer` (keyword heuristics; Claude infers category from context)
+- [x] `SummarizeExpensesTool` (week / month / year, optional category filter) and `ListExpenseCategoriesTool`
+- [x] `MessageFormatter#format_expense_summary`
 
 ---
 
@@ -89,13 +90,13 @@ Goal: OAuth setup + "schedule dinner Friday 7pm" → confirmation flow → event
 
 ### Epic: Calendar Tool
 
-- [ ] Add gems: `google-apis-calendar_v3`, `googleauth`
-- [ ] Migrations + models: `GoogleOauthToken` (with `encrypts`), `CalendarEvent`
-- [ ] `Google::OauthService` + controller (`/google/oauth/start`, `/google/oauth/callback`)
-- [ ] `Google::CalendarClient` (insert / list / update / delete; 401 → refresh)
-- [ ] `CreateCalendarEventTool` with `requires_confirmation? = true` + inline-keyboard confirm/cancel
-- [ ] `SyncCalendarEventJob` — push confirmed events to Google asynchronously
-- [ ] `ListCalendarEventsTool`
+- [x] Add gems: `google-apis-calendar_v3`, `googleauth`
+- [x] Migrations + models: `GoogleOauthToken`, `CalendarEvent`
+- [x] `Google::OauthService` + controller (`/google/oauth/start`, `/google/oauth/callback`)
+- [x] `Google::CalendarClient` (insert / list / delete)
+- [x] `CreateCalendarEventTool` with `requires_confirmation? = true` + inline-keyboard confirm/cancel
+- [x] `SyncCalendarEventJob` — push confirmed events to Google asynchronously
+- [x] `ListCalendarEventsTool`
 
 ---
 

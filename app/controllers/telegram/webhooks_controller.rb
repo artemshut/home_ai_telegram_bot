@@ -5,10 +5,10 @@ module Telegram
     def create
       return head :forbidden unless valid_secret_token?
 
-      update = request.json || JSON.parse(request.body.read) rescue {}
+      update = parse_update
       return head :ok unless update.is_a?(Hash)
 
-      HomeAiTelegramBot::Telegram::WebhookHandler.new(update).call
+      Telegram::WebhookHandler.new(update).call
       head :ok
     end
 
@@ -20,6 +20,12 @@ module Telegram
 
       received = request.headers["X-Telegram-Bot-Api-Secret-Token"]
       ActiveSupport::SecurityUtils.secure_compare(received.to_s, expected.to_s)
+    end
+
+    def parse_update
+      JSON.parse(request.raw_post)
+    rescue JSON::ParserError
+      {}
     end
   end
 end

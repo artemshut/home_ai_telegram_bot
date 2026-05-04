@@ -15,4 +15,9 @@ Rails.application.routes.draw do
   namespace :telegram do
     post "webhook", to: "webhooks#create"
   end
+
+  namespace :google do
+    get "oauth/start",    to: "oauth#start"
+    get "oauth/callback", to: "oauth#callback"
+  end
 end

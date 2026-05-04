@@ -58,7 +58,7 @@ bin/rails db:create db:migrate
 Edit credentials and add your secrets:
 
 ```bash
-EDITOR=vim bin/rails credentials:edit
+VISUAL="code --wait" bin/rails credentials:edit
 ```
 
 Required keys:
@@ -111,4 +111,38 @@ bundle exec bundler-audit    # check gems for CVEs
 
 ## Deployment
 
-Kamal is configured under `.kamal/` for containerized deployment. The Dockerfile uses a multi-stage build.
+### Fly.io
+
+The app includes `fly.toml` for a small single-machine Fly deployment. If your existing Fly app uses a different name, update these two values first:
+
+```toml
+app = "home-ai-telegram-bot"
+APP_HOST = "home-ai-telegram-bot.fly.dev"
+```
+
+Attach or create a Fly Postgres database so Fly provides `DATABASE_URL`, then set secrets:
+
+```bash
+flyctl secrets set RAILS_MASTER_KEY="$(cat config/master.key)"
+```
+
+Deploy:
+
+```bash
+flyctl deploy
+```
+
+After deploy, update credentials for production Google OAuth:
+
+```yaml
+google:
+  redirect_uri: "https://home-ai-telegram-bot.fly.dev/google/oauth/callback"
+```
+
+Also add that redirect URI in Google Cloud Console, then register Telegram's production webhook:
+
+```bash
+flyctl ssh console -C 'WEBHOOK_URL=https://home-ai-telegram-bot.fly.dev bin/rails telegram:set_webhook'
+```
+
+Kamal config is still present under `.kamal/`, but Fly is the current recommended target for this app.

@@ -168,10 +168,10 @@ Prefer explicit models and database state over hidden prompt memory.
 
 ### Service Structure
 
-Use namespaced services under `app/services/home_ai_telegram_bot/`:
+Use namespaced services directly under `app/services/`:
 
 ```
-app/services/home_ai_telegram_bot/
+app/services/
   ai/
     claude_client.rb          # Calls Claude API, manages requests/responses
     ai_router.rb              # Decodes Claude's tool calls, routes to tools
