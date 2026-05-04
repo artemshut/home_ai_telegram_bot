@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Admin — HomeAI Bot" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="bg-gray-50 text-gray-900 text-sm">
+    <nav class="bg-gray-900 text-white px-6 py-3 flex gap-6 items-center">
+      <span class="font-bold text-base">HomeAI Admin</span>
+      <%= link_to "AI Runs",      admin_ai_runs_path,      class: "hover:text-gray-300" %>
+      <%= link_to "Tool Calls",   admin_tool_calls_path,   class: "hover:text-gray-300" %>
+      <%= link_to "Weekly Menus", admin_weekly_menus_path, class: "hover:text-gray-300" %>
+      <%= link_to "Expenses",     admin_expenses_path,     class: "hover:text-gray-300" %>
+    </nav>
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <%= yield %>
+    </main>
+  </body>
+</html>

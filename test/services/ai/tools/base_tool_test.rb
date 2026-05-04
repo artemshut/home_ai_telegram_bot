@@ -8,7 +8,7 @@ class Ai::Tools::BaseToolTest < ActiveSupport::TestCase
       {
         "type" => "object",
         "properties" => { "text" => { "type" => "string" } },
-        "required" => ["text"]
+        "required" => [ "text" ]
       }
     end
 

@@ -1,0 +1,35 @@
+<% content_for :title, "AI Runs — Admin" %>
+<h1 class="text-xl font-bold mb-4">AI Runs <span class="text-gray-400 font-normal text-base">(last 100)</span></h1>
+
+<table class="w-full border-collapse bg-white shadow rounded">
+  <thead class="bg-gray-100 text-left">
+    <tr>
+      <th class="px-4 py-2 border-b">ID</th>
+      <th class="px-4 py-2 border-b">User</th>
+      <th class="px-4 py-2 border-b">Status</th>
+      <th class="px-4 py-2 border-b">Model</th>
+      <th class="px-4 py-2 border-b">Tokens in / out</th>
+      <th class="px-4 py-2 border-b">Tool calls</th>
+      <th class="px-4 py-2 border-b">Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @ai_runs.each do |run| %>
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border-b">
+          <%= link_to run.id, admin_ai_run_path(run), class: "text-blue-600 hover:underline" %>
+        </td>
+        <td class="px-4 py-2 border-b"><%= run.telegram_user&.display_name || "—" %></td>
+        <td class="px-4 py-2 border-b">
+          <span class="<%= status_badge_class(run.status) %>"><%= run.status %></span>
+        </td>
+        <td class="px-4 py-2 border-b"><%= run.model %></td>
+        <td class="px-4 py-2 border-b">
+          <%= run.input_tokens || "—" %> / <%= run.output_tokens || "—" %>
+        </td>
+        <td class="px-4 py-2 border-b"><%= run.tool_calls.size %></td>
+        <td class="px-4 py-2 border-b"><%= run.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -14,16 +14,36 @@ class ProcessTelegramUpdateJob < ApplicationJob
 
     bot = Telegram::BotClient.new
 
-    reply = handle_command(text, telegram_user) ||
-            ai_reply(telegram_user, text, chat_id, telegram_message, bot, reply_to_text)
+    Rails.logger.tagged("tg_user=#{telegram_user&.telegram_id}") do
+      reply = handle_command(text, telegram_user) ||
+              ai_reply(telegram_user, text, chat_id, telegram_message, bot, reply_to_text)
 
-    bot.send_message(chat_id: chat_id, text: reply) if reply.present?
+      bot.send_message(chat_id: chat_id, text: reply) if reply.present?
+    end
   end
 
   private
 
   def handle_command(text, telegram_user)
-    case text.strip
+    case text.strip.split.first
+    when "/start"
+      "Hi! I'm your household assistant. Send me a message to get started, or type /help to see what I can do."
+    when "/help"
+      <<~TEXT
+        *Available commands:*
+        /menu — show this week's menu
+        /help — show this help message
+        /whoami — show your account info
+
+        You can also just chat with me naturally — ask me to plan a menu, add dishes, build a shopping list, log an expense, or schedule a calendar event.
+      TEXT
+    when "/whoami"
+      if telegram_user
+        household_name = telegram_user.household&.name || "none"
+        "You are #{telegram_user.display_name} (Telegram ID: #{telegram_user.telegram_id}). Household: #{household_name}."
+      else
+        "I don't have a record for you yet. Try sending any message to get started."
+      end
     when "/menu"
       menu = telegram_user&.household&.weekly_menus&.order(week_start_date: :desc)&.first
       if menu
