@@ -15,9 +15,9 @@ production:
     schedule: every hour at minute 12
   send_daily_digest:
     class: SendDailyDigestJob
-    schedule: "TZ=Europe/Warsaw 0 8 * * *"
+    schedule: at 8am every day
 
 development:
   send_daily_digest:
     class: SendDailyDigestJob
-    schedule: "TZ=Europe/Warsaw 0 8 * * *"
+    schedule: at 8am every day
