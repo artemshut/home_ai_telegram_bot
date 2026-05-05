@@ -3,7 +3,7 @@ require "anthropic"
 module Ai
   class ClaudeClient
     MODEL = "claude-haiku-4-5-20251001"
-    MAX_TOKENS = 4096
+    MAX_TOKENS = 1024
 
     def initialize
       Anthropic.setup do |config|
