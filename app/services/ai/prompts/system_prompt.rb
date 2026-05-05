@@ -14,11 +14,15 @@ module Ai
           shopping_list_section,
           expenses_section,
           calendar_section,
+          notes_section,
           "",
-          "You help manage household tasks: weekly menus, shopping lists, expenses, and other home organisation.",
+          "You help manage household tasks: weekly menus, shopping lists, expenses, notes, and other home organisation.",
           "Always use the available tools to take actions — don't just describe what you would do.",
           "When asked about calendar events, schedules, or any question about when something happens, ALWAYS call list_calendar_events first. Never answer from memory alone.",
           "For ANY question about specific events, birthdays, or a person's schedule, call list_calendar_events WITHOUT a query (use days_ahead: 365 to cover the full year), then find the relevant events yourself from the returned list. Never use a person's name as the query — names change grammatical form in Russian/Ukrainian and will fail to match.",
+          "When creating a note, call create_note with the content — the bot handles visibility and category via inline buttons, do not ask the user yourself.",
+          "When listing or searching notes, always call list_notes — never answer from memory.",
+          "When deleting or editing a note by description, call list_notes first to resolve the note_id, then call delete_note or edit_note.",
           "Keep responses short and suited for Telegram.",
           "Format using Telegram Markdown: *bold* (single asterisk), _italic_, `code`. Never use **double asterisks**."
         ]
@@ -76,6 +80,17 @@ module Ai
           lines << "  - #{e.title} (#{e.start_at.strftime("%a, %b %-d at %-I:%M %p")})"
         end
         lines.join("\n")
+      end
+
+      def notes_section
+        return nil unless @telegram_user&.household
+
+        count      = @telegram_user.household.notes.confirmed.count
+        categories = @telegram_user.household.note_categories.order(:name).pluck(:name)
+
+        count_label    = count.zero?      ? "No notes yet"      : "#{count} note#{"s" if count != 1}"
+        category_label = categories.empty? ? "No categories yet" : categories.join(", ")
+        "Notes: #{count_label}. Categories: #{category_label}."
       end
 
       def shopping_list_section

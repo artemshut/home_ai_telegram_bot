@@ -71,6 +71,13 @@ module Telegram
       lines.join("\n")
     end
 
+    def format_note(note)
+      visibility_icon = note.visibility == "private" ? "🔒 Personal" : "🌐 Public"
+      category_label  = note.note_category&.name || "Uncategorised"
+      timestamp       = note.created_at.strftime("%-d %b %Y")
+      "*#{category_label}* · #{visibility_icon} · #{timestamp}\n\n#{note.content}"
+    end
+
     private
 
     def format_amount(amount, currency)

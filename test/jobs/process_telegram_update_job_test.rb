@@ -20,6 +20,7 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     fake_router.define_singleton_method(:call) { "Here is your menu." }
     fake_router.define_singleton_method(:last_shopping_list) { nil }
     fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
+    fake_router.define_singleton_method(:last_pending_note) { nil }
 
     fake_bot = Object.new
     message_sent = false
@@ -40,6 +41,7 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     fake_router.define_singleton_method(:call) { "Menu reply" }
     fake_router.define_singleton_method(:last_shopping_list) { nil }
     fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
+    fake_router.define_singleton_method(:last_pending_note) { nil }
 
     fake_bot = Object.new
     fake_bot.define_singleton_method(:send_message) { |chat_id:, text:, **| sent_to = chat_id }
@@ -84,6 +86,7 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     fake_router.define_singleton_method(:call) { called = true; "ok" }
     fake_router.define_singleton_method(:last_shopping_list) { nil }
     fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
+    fake_router.define_singleton_method(:last_pending_note) { nil }
 
     fake_bot = Object.new
     fake_bot.define_singleton_method(:send_message) { |**_| nil }
@@ -194,6 +197,7 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
       stub_router.define_singleton_method(:call) { "ok" }
       stub_router.define_singleton_method(:last_shopping_list) { nil }
       stub_router.define_singleton_method(:last_pending_calendar_event) { nil }
+      stub_router.define_singleton_method(:last_pending_note) { nil }
       stub_router
     }) do
       Telegram::BotClient.stub(:new, fake_bot) do

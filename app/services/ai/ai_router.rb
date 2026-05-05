@@ -18,6 +18,10 @@ module Ai
       @tool_context&.last_pending_calendar_event
     end
 
+    def last_pending_note
+      @tool_context&.last_pending_note
+    end
+
     def call
       ai_run = AiRun.create!(
         telegram_user:    @telegram_user,

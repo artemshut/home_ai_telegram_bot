@@ -7,6 +7,8 @@ class Household < ApplicationRecord
   has_many :expenses, dependent: :destroy
   has_many :calendar_events, dependent: :destroy
   has_one :google_oauth_token, dependent: :destroy
+  has_many :note_categories, dependent: :destroy
+  has_many :notes, dependent: :destroy
 
   validates :name, presence: true
 end

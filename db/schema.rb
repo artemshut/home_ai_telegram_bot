@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_05_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_05_150114) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -117,6 +117,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_000003) do
     t.index ["weekly_menu_id"], name: "index_meals_on_weekly_menu_id"
   end
 
+  create_table "note_categories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "household_id", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["household_id", "name"], name: "index_note_categories_on_household_id_and_name", unique: true
+    t.index ["household_id"], name: "index_note_categories_on_household_id"
+  end
+
+  create_table "notes", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "household_id", null: false
+    t.bigint "note_category_id"
+    t.string "status", default: "pending", null: false
+    t.bigint "telegram_user_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "visibility"
+    t.index ["household_id"], name: "index_notes_on_household_id"
+    t.index ["note_category_id"], name: "index_notes_on_note_category_id"
+    t.index ["telegram_user_id"], name: "index_notes_on_telegram_user_id"
+  end
+
   create_table "shopping_items", force: :cascade do |t|
     t.string "category"
     t.datetime "created_at", null: false
@@ -157,6 +180,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_000003) do
     t.string "first_name"
     t.bigint "household_id"
     t.string "last_name"
+    t.integer "pending_edit_note_id"
     t.bigint "telegram_id", null: false
     t.datetime "updated_at", null: false
     t.string "username"
@@ -198,6 +222,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_000003) do
   add_foreign_key "google_oauth_tokens", "households"
   add_foreign_key "meals", "dishes"
   add_foreign_key "meals", "weekly_menus"
+  add_foreign_key "note_categories", "households"
+  add_foreign_key "notes", "households"
+  add_foreign_key "notes", "note_categories"
+  add_foreign_key "notes", "telegram_users"
   add_foreign_key "shopping_items", "shopping_lists"
   add_foreign_key "shopping_lists", "households"
   add_foreign_key "shopping_lists", "weekly_menus"
