@@ -53,6 +53,16 @@ class MealTest < ActiveSupport::TestCase
     assert meal.valid?
   end
 
+  test "for_day returns meals on the given day" do
+    tuesday_dish = Dish.create!(household: @household, name: "Salad")
+    build_meal(day_of_week: "monday", meal_type: "lunch").save!
+    Meal.create!(weekly_menu: @menu, dish: tuesday_dish, day_of_week: "tuesday", meal_type: "lunch")
+
+    results = Meal.for_day("tuesday")
+    assert results.all? { |m| m.day_of_week == "tuesday" }
+    assert_not results.map(&:day_of_week).include?("monday")
+  end
+
   test "belongs to weekly_menu and dish" do
     meal = build_meal
     meal.save!

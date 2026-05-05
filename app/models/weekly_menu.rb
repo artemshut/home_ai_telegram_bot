@@ -7,4 +7,6 @@ class WeeklyMenu < ApplicationRecord
 
   DAYS = %w[monday tuesday wednesday thursday friday saturday sunday].freeze
   MEAL_TYPES = %w[breakfast lunch dinner].freeze
+
+  scope :for_week_of, ->(date) { where(week_start_date: date.beginning_of_week) }
 end

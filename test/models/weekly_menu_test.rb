@@ -46,6 +46,16 @@ class WeeklyMenuTest < ActiveSupport::TestCase
     assert_includes menu.dishes, dish
   end
 
+  test "for_week_of returns menu covering the given date" do
+    menu = WeeklyMenu.create!(household: @household, week_start_date: Date.new(2026, 5, 4))
+    assert_includes WeeklyMenu.for_week_of(Date.new(2026, 5, 5)), menu
+  end
+
+  test "for_week_of returns empty when no menu covers the week" do
+    WeeklyMenu.create!(household: @household, week_start_date: Date.new(2026, 5, 4))
+    assert_empty WeeklyMenu.for_week_of(Date.new(2026, 5, 12))
+  end
+
   test "DAYS constant covers the full week" do
     assert_equal 7, WeeklyMenu::DAYS.length
     assert_includes WeeklyMenu::DAYS, "monday"
