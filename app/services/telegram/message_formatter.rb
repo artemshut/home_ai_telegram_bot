@@ -24,6 +24,33 @@ module Telegram
       lines.join("\n")
     end
 
+    def format_daily_digest(date:, events:, meals:)
+      lines = [ "*Daily digest — #{date.strftime("%-d %b %Y")}*", "" ]
+
+      lines << "*Events:*"
+      if events.empty?
+        lines << "No events today."
+      else
+        events.each do |event|
+          time = event.all_day? ? "all day" : event.start_at.strftime("%H:%M")
+          lines << "• #{time} #{event.title}"
+        end
+      end
+
+      lines << ""
+      lines << "*Meals:*"
+      sorted_meals = meals.sort_by { |m| WeeklyMenu::MEAL_TYPES.index(m.meal_type) }
+      if sorted_meals.empty?
+        lines << "No meals planned today."
+      else
+        sorted_meals.each do |meal|
+          lines << "• #{meal.meal_type.capitalize}: #{meal.dish.name}"
+        end
+      end
+
+      lines.join("\n")
+    end
+
     def format_expense_summary(expenses, period:)
       return "No expenses recorded for this #{period}." if expenses.empty?
 
