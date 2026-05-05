@@ -1,0 +1,31 @@
+<% content_for :title, "Tool Calls — Admin" %>
+<h1 class="text-xl font-bold mb-4">Tool Calls <span class="text-gray-400 font-normal text-base">(last 100)</span></h1>
+
+<table class="w-full border-collapse bg-white shadow rounded">
+  <thead class="bg-gray-100 text-left">
+    <tr>
+      <th class="px-4 py-2 border-b">ID</th>
+      <th class="px-4 py-2 border-b">Tool</th>
+      <th class="px-4 py-2 border-b">Status</th>
+      <th class="px-4 py-2 border-b">Duration</th>
+      <th class="px-4 py-2 border-b">AI Run</th>
+      <th class="px-4 py-2 border-b">Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @tool_calls.each do |tc| %>
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border-b"><%= tc.id %></td>
+        <td class="px-4 py-2 border-b font-mono"><%= tc.tool_name %></td>
+        <td class="px-4 py-2 border-b">
+          <span class="<%= status_badge_class(tc.status) %>"><%= tc.status %></span>
+        </td>
+        <td class="px-4 py-2 border-b"><%= tc.duration_ms ? "#{tc.duration_ms} ms" : "—" %></td>
+        <td class="px-4 py-2 border-b">
+          <%= link_to "##{tc.ai_run_id}", admin_ai_run_path(tc.ai_run_id), class: "text-blue-600 hover:underline" %>
+        </td>
+        <td class="px-4 py-2 border-b"><%= tc.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

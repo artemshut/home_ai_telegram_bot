@@ -1,0 +1,25 @@
+<% content_for :title, "Weekly Menus — Admin" %>
+<h1 class="text-xl font-bold mb-4">Weekly Menus</h1>
+
+<table class="w-full border-collapse bg-white shadow rounded">
+  <thead class="bg-gray-100 text-left">
+    <tr>
+      <th class="px-4 py-2 border-b">Week of</th>
+      <th class="px-4 py-2 border-b">Household</th>
+      <th class="px-4 py-2 border-b">Meals</th>
+      <th class="px-4 py-2 border-b">Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @weekly_menus.each do |menu| %>
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border-b">
+          <%= link_to menu.week_start_date.strftime("%b %-d, %Y"), admin_weekly_menu_path(menu), class: "text-blue-600 hover:underline" %>
+        </td>
+        <td class="px-4 py-2 border-b"><%= menu.household.name %></td>
+        <td class="px-4 py-2 border-b"><%= menu.meals.size %></td>
+        <td class="px-4 py-2 border-b"><%= menu.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

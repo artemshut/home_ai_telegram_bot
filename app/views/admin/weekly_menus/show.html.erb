@@ -1,0 +1,27 @@
+<% content_for :title, "Menu – week of #{@weekly_menu.week_start_date} — Admin" %>
+<div class="mb-4">
+  <%= link_to "← Weekly Menus", admin_weekly_menus_path, class: "text-blue-600 hover:underline" %>
+</div>
+
+<h1 class="text-xl font-bold mb-1">Week of <%= @weekly_menu.week_start_date.strftime("%B %-d, %Y") %></h1>
+<p class="text-gray-500 mb-4"><%= @weekly_menu.household.name %></p>
+
+<% meals_by_day = @weekly_menu.meals.sort_by { |m| [WeeklyMenu::DAYS.index(m.day_of_week), WeeklyMenu::MEAL_TYPES.index(m.meal_type)] }.group_by(&:day_of_week) %>
+
+<div class="space-y-4">
+  <% WeeklyMenu::DAYS.each do |day| %>
+    <% day_meals = meals_by_day[day] %>
+    <% next unless day_meals.present? %>
+    <div class="bg-white shadow rounded p-4">
+      <h2 class="font-semibold text-base mb-2 capitalize"><%= day %></h2>
+      <table class="w-full text-sm">
+        <% day_meals.each do |meal| %>
+          <tr>
+            <td class="py-1 pr-4 text-gray-500 capitalize w-24"><%= meal.meal_type %></td>
+            <td class="py-1"><%= meal.dish.name %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  <% end %>
+</div>

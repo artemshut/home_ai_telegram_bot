@@ -27,29 +27,31 @@ module Ai
         system_prompt:    system_prompt
       )
 
-      messages = build_messages
-      tools    = ToolRegistry.tool_definitions
-      client   = ClaudeClient.new
+      Rails.logger.tagged("ai_run=#{ai_run.id}") do
+        messages = build_messages
+        tools    = ToolRegistry.tool_definitions
+        client   = ClaudeClient.new
 
-      MAX_DEPTH.times do
-        response   = client.call(messages: messages, system: system_prompt, tools: tools, ai_run: ai_run)
-        content    = response.fetch("content", [])
-        stop_reason = response["stop_reason"]
+        MAX_DEPTH.times do
+          response    = client.call(messages: messages, system: system_prompt, tools: tools, ai_run: ai_run)
+          content     = response.fetch("content", [])
+          stop_reason = response["stop_reason"]
 
-        if stop_reason == "tool_use"
-          messages << { role: "assistant", content: content }
+          if stop_reason == "tool_use"
+            messages << { role: "assistant", content: content }
 
-          tool_results = content.select { |b| b["type"] == "tool_use" }.map do |block|
-            execute_tool(block, ai_run)
+            tool_results = content.select { |b| b["type"] == "tool_use" }.map do |block|
+              execute_tool(block, ai_run)
+            end
+
+            messages << { role: "user", content: tool_results }
+          else
+            return content.find { |b| b["type"] == "text" }&.dig("text") || ""
           end
-
-          messages << { role: "user", content: tool_results }
-        else
-          return content.find { |b| b["type"] == "text" }&.dig("text") || ""
         end
-      end
 
-      "I'm sorry, I couldn't complete that request."
+        "I'm sorry, I couldn't complete that request."
+      end
     end
 
     private

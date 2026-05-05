@@ -1,0 +1,29 @@
+<% content_for :title, "Expenses — Admin" %>
+<h1 class="text-xl font-bold mb-4">Expenses <span class="text-gray-400 font-normal text-base">(last 100)</span></h1>
+
+<table class="w-full border-collapse bg-white shadow rounded">
+  <thead class="bg-gray-100 text-left">
+    <tr>
+      <th class="px-4 py-2 border-b">Date</th>
+      <th class="px-4 py-2 border-b">Description</th>
+      <th class="px-4 py-2 border-b">Amount</th>
+      <th class="px-4 py-2 border-b">Category</th>
+      <th class="px-4 py-2 border-b">User</th>
+      <th class="px-4 py-2 border-b">Household</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @expenses.each do |expense| %>
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border-b"><%= expense.spent_on.strftime("%Y-%m-%d") %></td>
+        <td class="px-4 py-2 border-b"><%= expense.description %></td>
+        <td class="px-4 py-2 border-b font-mono">
+          <%= number_with_precision(expense.amount, precision: 2) %> <%= expense.currency %>
+        </td>
+        <td class="px-4 py-2 border-b"><%= expense.expense_category.name %></td>
+        <td class="px-4 py-2 border-b"><%= expense.telegram_user&.display_name || "—" %></td>
+        <td class="px-4 py-2 border-b"><%= expense.household.name %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

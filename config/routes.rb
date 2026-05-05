@@ -20,4 +20,11 @@ Rails.application.routes.draw do
     get "oauth/start",    to: "oauth#start"
     get "oauth/callback", to: "oauth#callback"
   end
+
+  namespace :admin do
+    resources :ai_runs,      only: [ :index, :show ]
+    resources :tool_calls,   only: [ :index ]
+    resources :weekly_menus, only: [ :index, :show ]
+    resources :expenses,     only: [ :index ]
+  end
 end

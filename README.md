@@ -104,6 +104,43 @@ bundle exec brakeman         # security scan
 bundle exec bundler-audit    # check gems for CVEs
 ```
 
+### Google OAuth setup (Calendar integration)
+
+The Calendar tool requires a Google OAuth application with the Calendar API enabled.
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a project (or use an existing one).
+2. Enable the **Google Calendar API** under *APIs & Services → Library*.
+3. Create OAuth 2.0 credentials: *APIs & Services → Credentials → Create Credentials → OAuth client ID*, type **Web application**.
+4. Add an authorised redirect URI: `http://localhost:3000/google/oauth/callback` for development.
+5. Copy the client ID and secret into credentials:
+
+```bash
+VISUAL="code --wait" bin/rails credentials:edit
+```
+
+```yaml
+google:
+  client_id: "<your-client-id>"
+  client_secret: "<your-client-secret>"
+  redirect_uri: "http://localhost:3000/google/oauth/callback"
+```
+
+6. Start the dev server, then visit `http://localhost:3000/google/oauth/start` and complete the OAuth flow.  
+   The token is stored in `GoogleOauthToken` and reused automatically (auto-refreshed on expiry).
+
+### Admin UI
+
+A read-only debug dashboard is available at `/admin` (HTTP basic auth — credentials come from `Rails.application.credentials.admin.username` / `admin.password`; defaults to `admin` / `secret` if not set).
+
+```yaml
+# in credentials
+admin:
+  username: "admin"
+  password: "a-long-random-string"
+```
+
+Pages: **AI Runs**, **Tool Calls**, **Weekly Menus**, **Expenses**.
+
 ## Project Documents
 
 - [`CLAUDE.md`](CLAUDE.md) — architecture, design rules, and guidance for Claude Code agents

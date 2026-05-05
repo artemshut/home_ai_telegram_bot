@@ -97,6 +97,90 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
     assert called
   end
 
+  test "/start returns welcome without calling Claude" do
+    update = @update.deep_merge("message" => { "text" => "/start" })
+    sent_text = nil
+    router_called = false
+
+    fake_router = Object.new
+    fake_router.define_singleton_method(:call) { router_called = true; "ignored" }
+
+    fake_bot = Object.new
+    fake_bot.define_singleton_method(:send_message) { |chat_id:, text:, **| sent_text = text }
+
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
+        ProcessTelegramUpdateJob.new.perform(update.to_json)
+      end
+    end
+
+    assert_not router_called, "/start should not reach AiRouter"
+    assert_includes sent_text, "household assistant"
+  end
+
+  test "/help returns command list without calling Claude" do
+    update = @update.deep_merge("message" => { "text" => "/help" })
+    sent_text = nil
+    router_called = false
+
+    fake_router = Object.new
+    fake_router.define_singleton_method(:call) { router_called = true; "ignored" }
+
+    fake_bot = Object.new
+    fake_bot.define_singleton_method(:send_message) { |chat_id:, text:, **| sent_text = text }
+
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
+        ProcessTelegramUpdateJob.new.perform(update.to_json)
+      end
+    end
+
+    assert_not router_called, "/help should not reach AiRouter"
+    assert_includes sent_text, "/menu"
+  end
+
+  test "/whoami returns user info without calling Claude" do
+    update = @update.deep_merge("message" => { "text" => "/whoami" })
+    sent_text = nil
+    router_called = false
+
+    fake_router = Object.new
+    fake_router.define_singleton_method(:call) { router_called = true; "ignored" }
+
+    fake_bot = Object.new
+    fake_bot.define_singleton_method(:send_message) { |chat_id:, text:, **| sent_text = text }
+
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
+        ProcessTelegramUpdateJob.new.perform(update.to_json)
+      end
+    end
+
+    assert_not router_called, "/whoami should not reach AiRouter"
+    assert_includes sent_text, @user.telegram_id.to_s
+  end
+
+  test "/menu with no menu tells user to plan one" do
+    update = @update.deep_merge("message" => { "text" => "/menu" })
+    sent_text = nil
+    router_called = false
+
+    fake_router = Object.new
+    fake_router.define_singleton_method(:call) { router_called = true; "ignored" }
+
+    fake_bot = Object.new
+    fake_bot.define_singleton_method(:send_message) { |chat_id:, text:, **| sent_text = text }
+
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
+        ProcessTelegramUpdateJob.new.perform(update.to_json)
+      end
+    end
+
+    assert_not router_called
+    assert_includes sent_text, "No menu"
+  end
+
   test "passes (no text) when message text is blank" do
     update = @update.deep_merge("message" => { "text" => nil })
     received_text = nil

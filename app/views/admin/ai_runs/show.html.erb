@@ -1,0 +1,53 @@
+<% content_for :title, "AI Run ##{@ai_run.id} — Admin" %>
+<div class="mb-4">
+  <%= link_to "← AI Runs", admin_ai_runs_path, class: "text-blue-600 hover:underline" %>
+</div>
+
+<h1 class="text-xl font-bold mb-4">AI Run #<%= @ai_run.id %></h1>
+
+<div class="bg-white shadow rounded p-4 mb-6 grid grid-cols-2 gap-4">
+  <div><span class="font-semibold">User:</span> <%= @ai_run.telegram_user&.display_name || "—" %></div>
+  <div><span class="font-semibold">Status:</span> <span class="<%= status_badge_class(@ai_run.status) %>"><%= @ai_run.status %></span></div>
+  <div><span class="font-semibold">Model:</span> <%= @ai_run.model %></div>
+  <div><span class="font-semibold">Duration:</span> <%= @ai_run.duration_ms ? "#{@ai_run.duration_ms} ms" : "—" %></div>
+  <div><span class="font-semibold">Tokens in:</span> <%= @ai_run.input_tokens || "—" %></div>
+  <div><span class="font-semibold">Tokens out:</span> <%= @ai_run.output_tokens || "—" %></div>
+  <div><span class="font-semibold">Cache creation:</span> <%= @ai_run.cache_creation_tokens || "—" %></div>
+  <div><span class="font-semibold">Cache read:</span> <%= @ai_run.cache_read_tokens || "—" %></div>
+  <div class="col-span-2"><span class="font-semibold">Created:</span> <%= @ai_run.created_at.strftime("%Y-%m-%d %H:%M:%S") %></div>
+  <% if @ai_run.error.present? %>
+    <div class="col-span-2 text-red-600"><span class="font-semibold">Error:</span> <%= @ai_run.error %></div>
+  <% end %>
+</div>
+
+<% if @ai_run.tool_calls.any? %>
+  <h2 class="text-lg font-bold mb-2">Tool Calls</h2>
+  <table class="w-full border-collapse bg-white shadow rounded mb-6">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-2 border-b">Tool</th>
+        <th class="px-4 py-2 border-b">Status</th>
+        <th class="px-4 py-2 border-b">Duration</th>
+        <th class="px-4 py-2 border-b">Arguments</th>
+        <th class="px-4 py-2 border-b">Result / Error</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @ai_run.tool_calls.each do |tc| %>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border-b font-mono"><%= tc.tool_name %></td>
+          <td class="px-4 py-2 border-b"><span class="<%= status_badge_class(tc.status) %>"><%= tc.status %></span></td>
+          <td class="px-4 py-2 border-b"><%= tc.duration_ms ? "#{tc.duration_ms} ms" : "—" %></td>
+          <td class="px-4 py-2 border-b font-mono text-xs whitespace-pre-wrap"><%= JSON.pretty_generate(tc.arguments) %></td>
+          <td class="px-4 py-2 border-b font-mono text-xs whitespace-pre-wrap">
+            <% if tc.error.present? %>
+              <span class="text-red-600"><%= tc.error %></span>
+            <% else %>
+              <%= JSON.pretty_generate(tc.result) %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
