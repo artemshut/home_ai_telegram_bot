@@ -13,4 +13,5 @@ class CalendarEvent < ApplicationRecord
 
   scope :upcoming, -> { where("start_at >= ?", Time.current).order(:start_at) }
   scope :active,   -> { where(status: %w[confirmed synced]) }
+  scope :today,    -> { where(start_at: Date.current.all_day) }
 end
