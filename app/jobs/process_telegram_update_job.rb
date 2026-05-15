@@ -132,6 +132,22 @@ class ProcessTelegramUpdateJob < ApplicationJob
       end
     end
 
+    if router.respond_to?(:google_calendar_reauth_required?) && router.google_calendar_reauth_required?
+      bot.send_message(chat_id: chat_id, text: reply) if reply.present?
+
+      household = router.google_calendar_reauth_household
+      if household
+        keyboard = Telegram::KeyboardBuilder.new.google_calendar_reconnect(household)
+        bot.send_message(
+          chat_id: chat_id,
+          text: "Google Calendar access expired or was revoked. Reconnect it here:",
+          reply_markup: keyboard.to_json
+        )
+      end
+
+      structured_sent = true
+    end
+
     structured_sent ? nil : reply
   end
 end

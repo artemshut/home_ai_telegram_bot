@@ -2,6 +2,8 @@ require "google/apis/calendar_v3"
 
 module Google
   class CalendarClient
+    ReauthorizationRequired = Class.new(StandardError)
+
     def initialize(household)
       @household   = household
       @credentials = OauthService.new.credentials_for(household)
@@ -60,10 +62,13 @@ module Google
     end
 
     def refresh_if_expired!
+      raise ReauthorizationRequired, "Google Calendar is not connected." unless @credentials
       return unless @credentials.expires_within?(300)
 
       @credentials.fetch_access_token!
       persist_token!
+    rescue ::Signet::AuthorizationError, ::Google::Apis::AuthorizationError => e
+      raise ReauthorizationRequired, e.message
     end
 
     def persist_token!

@@ -11,6 +11,16 @@ module Telegram
       }
     end
 
+    def google_calendar_reconnect(household)
+      {
+        inline_keyboard: [
+          [
+            { text: "Reconnect Google Calendar", url: google_oauth_start_url(household) }
+          ]
+        ]
+      }
+    end
+
     def note_visibility_choice(note)
       {
         inline_keyboard: [
@@ -49,6 +59,13 @@ module Telegram
         [ { text: label, callback_data: "toggle_item:#{item.id}" } ]
       end
       { inline_keyboard: rows }
+    end
+
+    private
+
+    def google_oauth_start_url(household)
+      host = ENV.fetch("APP_HOST", "home-ai-telegram-bot.fly.dev")
+      "https://#{host}/google/oauth/start?household_id=#{household.id}"
     end
   end
 end

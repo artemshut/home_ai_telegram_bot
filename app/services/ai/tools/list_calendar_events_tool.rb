@@ -43,12 +43,15 @@ module Ai
         cutoff = days.days.from_now
 
         gclient = Google::CalendarClient.new(household)
-        return fetch_from_google(gclient, query, cutoff) if gclient.authorized?
+        unless gclient.authorized?
+          mark_google_reauth_required(context, household)
+          return fetch_from_local_with_reauth_notice(household, query, days, cutoff)
+        end
 
-        fetch_from_local(household, query, days, cutoff)
+        fetch_from_google(gclient, query, cutoff, context, household)
       end
 
-      def fetch_from_google(gclient, query, cutoff)
+      def fetch_from_google(gclient, query, cutoff, context, household)
         result = gclient.list(time_min: Time.current, time_max: cutoff, q: query)
         items  = result.items || []
 
@@ -65,8 +68,29 @@ module Ai
           lines << "      #{e.location}" if e.location.present?
         end
         ToolResult.ok(lines.join("\n"))
+      rescue Google::CalendarClient::ReauthorizationRequired => err
+        mark_google_reauth_required(context, household)
+        fallback = fetch_from_local(household, query, (cutoff.to_date - Date.current).to_i, cutoff)
+        ToolResult.ok(
+          [
+            "Google Calendar needs to be reconnected: #{err.message}",
+            "",
+            fallback.to_s
+          ].join("\n")
+        )
       rescue => err
         ToolResult.err("Could not read Google Calendar: #{err.message}")
+      end
+
+      def fetch_from_local_with_reauth_notice(household, query, days, cutoff)
+        fallback = fetch_from_local(household, query, days, cutoff)
+        ToolResult.ok(
+          [
+            "Google Calendar is not connected. Use the reconnect button I send after this message.",
+            "",
+            fallback.to_s
+          ].join("\n")
+        )
       end
 
       def fetch_from_local(household, query, days, cutoff)
@@ -102,6 +126,11 @@ module Ai
 
       def sanitize_query(query)
         query.gsub(/[%_\\]/) { |c| "\\#{c}" }
+      end
+
+      def mark_google_reauth_required(context, household)
+        context.google_calendar_reauth_required = true
+        context.google_calendar_reauth_household = household
       end
     end
   end

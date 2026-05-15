@@ -164,4 +164,32 @@ class Ai::Tools::ListCalendarEventsToolTest < ActiveSupport::TestCase
       assert_includes result.to_s, "Diana's Birthday"
     end
   end
+
+  test "marks context for Google reconnect when not authorized" do
+    without_google do
+      result = @tool.execute({}, @context)
+
+      assert result.success
+      assert_equal true, @context.google_calendar_reauth_required
+      assert_equal @household, @context.google_calendar_reauth_household
+      assert_includes result.to_s, "Google Calendar is not connected"
+    end
+  end
+
+  test "marks context for Google reconnect when token refresh fails" do
+    fake_client = Object.new
+    fake_client.define_singleton_method(:authorized?) { true }
+    fake_client.define_singleton_method(:list) do |**_|
+      raise Google::CalendarClient::ReauthorizationRequired, "invalid_grant"
+    end
+
+    Google::CalendarClient.stub(:new, fake_client) do
+      result = @tool.execute({}, @context)
+
+      assert result.success
+      assert_equal true, @context.google_calendar_reauth_required
+      assert_equal @household, @context.google_calendar_reauth_household
+      assert_includes result.to_s, "needs to be reconnected"
+    end
+  end
 end

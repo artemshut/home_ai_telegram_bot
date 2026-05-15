@@ -207,4 +207,32 @@ class ProcessTelegramUpdateJobTest < ActiveSupport::TestCase
 
     assert_equal "(no text)", received_text
   end
+
+  test "sends Google Calendar reconnect button when router requests reauthorization" do
+    household = Household.create!(name: "Home")
+    @user.update!(household: household)
+
+    fake_router = Object.new
+    fake_router.define_singleton_method(:call) { "Calendar fallback reply" }
+    fake_router.define_singleton_method(:last_shopping_list) { nil }
+    fake_router.define_singleton_method(:last_pending_calendar_event) { nil }
+    fake_router.define_singleton_method(:last_pending_note) { nil }
+    fake_router.define_singleton_method(:google_calendar_reauth_required?) { true }
+    fake_router.define_singleton_method(:google_calendar_reauth_household) { household }
+
+    sent_messages = []
+    fake_bot = Object.new
+    fake_bot.define_singleton_method(:send_message) { |**kwargs| sent_messages << kwargs }
+
+    Ai::AiRouter.stub(:new, fake_router) do
+      Telegram::BotClient.stub(:new, fake_bot) do
+        ProcessTelegramUpdateJob.new.perform(@update.to_json)
+      end
+    end
+
+    assert_equal 2, sent_messages.size
+    assert_equal "Calendar fallback reply", sent_messages.first[:text]
+    assert_includes sent_messages.second[:text], "Reconnect"
+    assert_includes sent_messages.second[:reply_markup], "/google/oauth/start?household_id=#{household.id}"
+  end
 end

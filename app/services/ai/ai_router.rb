@@ -22,6 +22,14 @@ module Ai
       @tool_context&.last_pending_note
     end
 
+    def google_calendar_reauth_required?
+      @tool_context&.google_calendar_reauth_required == true
+    end
+
+    def google_calendar_reauth_household
+      @tool_context&.google_calendar_reauth_household || @telegram_user&.household
+    end
+
     def call
       ai_run = AiRun.create!(
         telegram_user:    @telegram_user,
