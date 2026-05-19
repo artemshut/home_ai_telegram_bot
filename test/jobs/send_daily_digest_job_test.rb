@@ -16,6 +16,24 @@ class SendDailyDigestJobTest < ActiveSupport::TestCase
     bot
   end
 
+  def google_event(summary:, date_time: nil, date: nil)
+    start = Struct.new(:date_time, :date).new(date_time, date)
+    Struct.new(:summary, :start).new(summary, start)
+  end
+
+  def stub_google_client(authorized:, items: [], raises: nil, &block)
+    fake_result = Struct.new(:items).new(items)
+    fake_client = Object.new
+    fake_client.define_singleton_method(:authorized?) { authorized }
+    fake_client.define_singleton_method(:list) do |**_|
+      raise raises if raises
+
+      fake_result
+    end
+
+    Google::CalendarClient.stub(:new, fake_client, &block)
+  end
+
   test "sends message to every telegram_user in each household" do
     bot = fake_bot
 
@@ -97,6 +115,49 @@ class SendDailyDigestJobTest < ActiveSupport::TestCase
     end
 
     assert sent_texts.any? { |t| t.include?("Morning standup") }
+  end
+
+  test "includes today's Google Calendar events in the digest when connected" do
+    items = [
+      google_event(summary: "Gallery", date_time: Time.zone.parse("#{Date.current} 19:50")),
+      google_event(summary: "Birthday", date: Date.current)
+    ]
+
+    sent_texts = []
+    bot = Object.new
+    bot.define_singleton_method(:send_message) { |**kwargs| sent_texts << kwargs[:text] }
+
+    stub_google_client(authorized: true, items: items) do
+      Telegram::BotClient.stub(:new, bot) do
+        SendDailyDigestJob.new.perform
+      end
+    end
+
+    assert sent_texts.any? { |t| t.include?("19:50 Gallery") }
+    assert sent_texts.any? { |t| t.include?("all day Birthday") }
+  end
+
+  test "falls back to local events when Google Calendar read fails" do
+    CalendarEvent.create!(
+      household: @household,
+      title: "Local fallback",
+      start_at: Time.zone.parse("#{Date.current} 11:00"),
+      end_at:   Time.zone.parse("#{Date.current} 11:30"),
+      all_day: false,
+      status: "confirmed"
+    )
+
+    sent_texts = []
+    bot = Object.new
+    bot.define_singleton_method(:send_message) { |**kwargs| sent_texts << kwargs[:text] }
+
+    stub_google_client(authorized: true, raises: StandardError.new("Google timeout")) do
+      Telegram::BotClient.stub(:new, bot) do
+        SendDailyDigestJob.new.perform
+      end
+    end
+
+    assert sent_texts.any? { |t| t.include?("Local fallback") }
   end
 
   test "includes today's meals from the current week's menu" do
