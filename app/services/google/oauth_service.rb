@@ -1,6 +1,6 @@
 module Google
   class OauthService
-    SCOPE = "https://www.googleapis.com/auth/calendar".freeze
+    SCOPE = "https://www.googleapis.com/auth/calendar.events".freeze
 
     def authorization_url(household_id:)
       client = oauth_client
